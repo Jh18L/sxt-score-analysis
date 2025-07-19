@@ -140,28 +140,91 @@ class DataStorage {
 
   // 检查用户是否被拉黑
   public isUserBlacklisted(userId: string): boolean {
-    return this.blacklist.has(userId);
+    // 检查黑名单Set
+    const inBlacklistSet = this.blacklist.has(userId);
+    
+    // 检查用户对象的isBlacklisted字段
+    const user = this.users.get(userId);
+    const userBlacklisted = user?.isBlacklisted || false;
+    
+    // 通过账号或手机号查找用户
+    const userByAccount = Array.from(this.users.values()).find(u => 
+      u.account === userId || u.phoneNumber === userId
+    );
+    const accountUserBlacklisted = userByAccount?.isBlacklisted || false;
+    
+    const isBlacklisted = inBlacklistSet || userBlacklisted || accountUserBlacklisted;
+    
+    console.log('拉黑检查:', {
+      userId,
+      inBlacklistSet,
+      userBlacklisted,
+      accountUserBlacklisted,
+      isBlacklisted
+    });
+    
+    return isBlacklisted;
   }
 
   // 拉黑用户
   public blacklistUser(userId: string): void {
+    // 添加到黑名单Set
     this.blacklist.add(userId);
+    
+    // 更新用户对象的isBlacklisted字段
     const user = this.users.get(userId);
     if (user) {
       user.isBlacklisted = true;
       this.users.set(userId, user);
     }
+    
+    // 通过账号或手机号查找并更新所有相关用户
+    const relatedUsers = Array.from(this.users.values()).filter(u => 
+      u.account === userId || u.phoneNumber === userId
+    );
+    
+    relatedUsers.forEach(relatedUser => {
+      relatedUser.isBlacklisted = true;
+      this.users.set(relatedUser.id, relatedUser);
+    });
+    
+    console.log('拉黑用户:', {
+      userId,
+      userUpdated: !!user,
+      relatedUsersCount: relatedUsers.length
+    });
+    
     this.saveToLocalStorage();
   }
 
   // 解除拉黑
   public unblacklistUser(userId: string): void {
+    // 从黑名单Set中移除
     this.blacklist.delete(userId);
+    
+    // 更新用户对象的isBlacklisted字段
     const user = this.users.get(userId);
     if (user) {
       user.isBlacklisted = false;
       this.users.set(userId, user);
     }
+    
+    // 通过账号或手机号查找并更新所有相关用户
+    const relatedUsers = Array.from(this.users.values()).filter(u => 
+      u.account === userId || u.phoneNumber === userId
+    );
+    
+    relatedUsers.forEach(relatedUser => {
+      relatedUser.isBlacklisted = false;
+      this.users.set(relatedUser.id, relatedUser);
+    });
+    
+    console.log('解除拉黑:', {
+      userId,
+      userUpdated: !!user,
+      relatedUsersCount: relatedUsers.length
+    });
+    
     this.saveToLocalStorage();
   }
 

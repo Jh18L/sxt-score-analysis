@@ -112,16 +112,21 @@ const LoginPage: React.FC = () => {
       });
       const data = await res.json();
       if (data.code === 200 && data.success) {
-        // 检查用户是否被拉黑
+        // 检查用户是否被拉黑（在保存用户数据之前检查）
         const storage = DataStorage.getInstance();
-        if (storage.isUserBlacklisted(account)) {
+        
+        // 检查是否已存在该手机号的用户
+        const existingUser = storage.getUserById(account);
+        
+        // 检查拉黑状态：检查现有用户和黑名单
+        const isBlacklisted = existingUser?.isBlacklisted || storage.isUserBlacklisted(account);
+        
+        if (isBlacklisted) {
           setError('您的账号已被拉黑，无法登录');
           setLoading(false);
           return;
         }
-
-        // 检查是否已存在该手机号的用户
-        const existingUser = storage.getUserById(account);
+        
         const isNewUser = !existingUser;
 
         // 保存用户数据
