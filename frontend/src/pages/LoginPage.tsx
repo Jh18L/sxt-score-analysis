@@ -149,7 +149,10 @@ const LoginPage: React.FC = () => {
           // 保存完整的userSimpleDTO
           userInfo: data.data
         };
+        
+        console.log('准备保存用户数据:', userInfo);
         storage.saveUserData(userInfo);
+        console.log('用户数据保存完成');
 
         localStorage.setItem('token', data.data.token);
         localStorage.setItem('refreshToken', data.data.refreshToken);

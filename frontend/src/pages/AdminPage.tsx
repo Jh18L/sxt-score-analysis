@@ -44,8 +44,17 @@ const AdminPage: React.FC = () => {
 
   const loadUsers = () => {
     const storage = DataStorage.getInstance();
-    setUsers(storage.getAllUsers());
-    setBlacklistedUsers(storage.getBlacklistedUsers());
+    const allUsers = storage.getAllUsers();
+    const blacklistedUsers = storage.getBlacklistedUsers();
+    
+    console.log('AdminPage - 加载用户数据:', {
+      totalUsers: allUsers.length,
+      blacklistedUsers: blacklistedUsers.length,
+      users: allUsers
+    });
+    
+    setUsers(allUsers);
+    setBlacklistedUsers(blacklistedUsers);
   };
 
   const handleBlacklistUser = (userId: string) => {

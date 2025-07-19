@@ -49,7 +49,10 @@ class DataStorage {
   // 保存用户数据
   public saveUserData(userData: Partial<UserData>): void {
     const userId = userData.id || userData.account || userData.phoneNumber;
-    if (!userId) return;
+    if (!userId) {
+      console.error('保存用户数据失败：缺少用户ID', userData);
+      return;
+    }
 
     // 检查是否存在相同账号的用户
     let existingUser: UserData | undefined;
@@ -84,9 +87,10 @@ class DataStorage {
       // 删除旧记录，使用新的合并数据
       this.users.delete(existingUser.id);
       this.users.set(userId, mergedUser);
+      console.log('更新现有用户数据:', userId, mergedUser);
     } else {
       // 创建新用户
-      const newUser = {
+      const newUser: UserData = {
         id: userId,
         account: userData.account || '',
         phoneNumber: userData.phoneNumber || '',
@@ -96,13 +100,32 @@ class DataStorage {
         loginTime: new Date().toISOString(),
         examData: [],
         isBlacklisted: false,
-        ...userData
+        // 确保所有字段都被正确设置
+        userId: userData.userId,
+        plainPassword: userData.plainPassword,
+        userName: userData.userName,
+        realName: userData.realName,
+        email: userData.email,
+        avatar: userData.avatar,
+        gender: userData.gender,
+        birthday: userData.birthday,
+        address: userData.address,
+        idCard: userData.idCard,
+        studentId: userData.studentId,
+        className: userData.className,
+        gradeId: userData.gradeId,
+        schoolId: userData.schoolId,
+        areaId: userData.areaId,
+        clazzId: userData.clazzId,
+        userInfo: userData.userInfo
       };
       
       this.users.set(userId, newUser);
+      console.log('创建新用户数据:', userId, newUser);
     }
     
     this.saveToLocalStorage();
+    console.log('当前用户总数:', this.users.size);
   }
 
   // 保存考试数据
@@ -151,7 +174,13 @@ class DataStorage {
 
   // 获取所有用户数据
   public getAllUsers(): UserData[] {
-    return Array.from(this.users.values());
+    const allUsers = Array.from(this.users.values());
+    console.log('DataStorage - getAllUsers:', {
+      usersMapSize: this.users.size,
+      returnedUsers: allUsers.length,
+      users: allUsers
+    });
+    return allUsers;
   }
 
   // 获取黑名单用户
