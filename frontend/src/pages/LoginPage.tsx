@@ -84,19 +84,20 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    
+    // 在发送登录请求前检查用户是否被拉黑
+    const storage = DataStorage.getInstance();
+    const existingUser = storage.getUserById(account);
+    const isBlacklisted = existingUser?.isBlacklisted || storage.isUserBlacklisted(account);
+    
+    if (isBlacklisted) {
+      setError('您的账号已被拉黑，无法登录');
+      setLoading(false);
+      return;
+    }
+    
     try {
       if (mode === 'sms') {
-        // 验证码登录时，在验证码校验前再次检查拉黑状态
-        const storage = DataStorage.getInstance();
-        const existingUser = storage.getUserById(account);
-        const isBlacklisted = existingUser?.isBlacklisted || storage.isUserBlacklisted(account);
-        
-        if (isBlacklisted) {
-          setError('您的账号已被拉黑，无法登录');
-          setLoading(false);
-          return;
-        }
-        
         // 先自动校验验证码
         if (!smsCode || smsCode.length !== 6) {
           setError('请输入6位验证码');
@@ -134,21 +135,8 @@ const LoginPage: React.FC = () => {
       });
       const data = await res.json();
       if (data.code === 200 && data.success) {
-        // 检查用户是否被拉黑（在保存用户数据之前检查）
-        const storage = DataStorage.getInstance();
-        
         // 检查是否已存在该手机号的用户
         const existingUser = storage.getUserById(account);
-        
-        // 检查拉黑状态：检查现有用户和黑名单
-        const isBlacklisted = existingUser?.isBlacklisted || storage.isUserBlacklisted(account);
-        
-        if (isBlacklisted) {
-          setError('您的账号已被拉黑，无法登录');
-          setLoading(false);
-          return;
-        }
-        
         const isNewUser = !existingUser;
 
         // 保存用户数据
