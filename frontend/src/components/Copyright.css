@@ -1,0 +1,25 @@
+.copyright-container {
+  text-align: center;
+  padding: 16px 0;
+  margin-top: 20px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.copyright-container p {
+  color: #a0aec0;
+  font-size: 0.8rem;
+  margin: 0;
+  font-weight: 400;
+}
+
+@media (max-width: 768px) {
+  .copyright-container {
+    padding: 12px 0;
+    margin-top: 16px;
+  }
+  
+  .copyright-container p {
+    font-size: 0.75rem;
+  }
+} 

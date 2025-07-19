@@ -1,0 +1,313 @@
+.admin-login-container, .admin-container {
+  max-width: 800px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+.admin-title {
+  margin-bottom: 24px;
+  font-size: 1.6rem;
+  color: #222;
+  font-weight: 700;
+  text-align: center;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+.admin-input {
+  width: 100%;
+  max-width: 300px;
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.admin-input:focus {
+  border-color: #1677ff;
+}
+.admin-login-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.admin-login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+.admin-error {
+  color: #e53e3e;
+  font-size: 0.9rem;
+}
+.data-management {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.data-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 120px;
+}
+.export-btn {
+  background: #48bb78;
+  color: #fff;
+}
+.export-btn:hover {
+  background: #38a169;
+  transform: translateY(-1px);
+}
+.import-btn {
+  background: #4299e1;
+  color: #fff;
+}
+.import-btn:hover {
+  background: #3182ce;
+  transform: translateY(-1px);
+}
+.clear-btn {
+  background: #f56565;
+  color: #fff;
+}
+.clear-btn:hover {
+  background: #e53e3e;
+  transform: translateY(-1px);
+}
+.admin-message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+.admin-message.success {
+  background: #c6f6d5;
+  color: #22543d;
+  border: 1px solid #9ae6b4;
+}
+.admin-message.error {
+  background: #fed7d7;
+  color: #742a2a;
+  border: 1px solid #feb2b2;
+}
+.admin-nav {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  justify-content: center;
+}
+.admin-nav-btn {
+  background: #f7fafc;
+  border: 2px solid #e2e8f0;
+  color: #4a5568;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.admin-nav-btn.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  border-color: #667eea;
+}
+.admin-nav-btn:hover:not(.active) {
+  border-color: #667eea;
+  color: #667eea;
+}
+.admin-content h3 {
+  margin-bottom: 16px;
+  font-size: 1.3rem;
+  color: #2d3748;
+  font-weight: 600;
+}
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.user-item {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.user-item:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
+}
+.user-item.blacklisted {
+  background: #fed7d7;
+  border-color: #feb2b2;
+}
+.user-item.blacklisted:hover {
+  background: #feb2b2;
+}
+.user-info {
+  flex: 1;
+}
+.user-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 4px;
+}
+.user-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: #718096;
+}
+.user-actions {
+  display: flex;
+  gap: 8px;
+}
+.action-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.blacklist-btn {
+  background: #f56565;
+  color: #fff;
+}
+.blacklist-btn:hover:not(:disabled) {
+  background: #e53e3e;
+}
+.blacklist-btn:disabled {
+  background: #cbd5e0;
+  cursor: not-allowed;
+}
+.unblacklist-btn {
+  background: #48bb78;
+  color: #fff;
+}
+.unblacklist-btn:hover {
+  background: #38a169;
+}
+.delete-btn {
+  background: #ed8936;
+  color: #fff;
+}
+.delete-btn:hover {
+  background: #dd6b20;
+}
+.admin-container {
+  max-width: 1000px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+.back-btn {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 16px;
+  border-radius: 8px;
+  margin-right: 8px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.back-btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.back-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+.pretty-back {
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 6px 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.pretty-back:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+@media (max-width: 700px) {
+  .admin-login-container, .admin-container {
+    margin: 8px;
+    padding: 16px 8px;
+  }
+  .admin-title {
+    font-size: 1.4rem;
+  }
+  .data-management {
+    flex-direction: column;
+    align-items: center;
+  }
+  .data-btn {
+    width: 100%;
+    max-width: 200px;
+  }
+  .admin-nav {
+    flex-direction: column;
+  }
+  .user-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .user-actions {
+    justify-content: center;
+  }
+  .user-details {
+    flex-direction: column;
+    gap: 4px;
+  }
+} 

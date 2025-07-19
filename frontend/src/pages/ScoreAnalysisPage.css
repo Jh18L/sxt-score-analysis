@@ -1,0 +1,302 @@
+.score-analysis-container {
+  max-width: 900px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+.back-btn {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 16px;
+  border-radius: 8px;
+  margin-right: 8px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.back-btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.back-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+.pretty-back {
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 6px 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.pretty-back:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.analysis-title {
+  margin-bottom: 16px;
+  font-size: 1.6rem;
+  color: #222;
+  font-weight: 700;
+  text-align: center;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.exam-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1677ff;
+  margin-bottom: 20px;
+  text-align: center;
+  background: rgba(22,119,255,0.1);
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+.chart-section {
+  background: linear-gradient(135deg, #f8fafc 0%, #e6f0ff 100%);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 12px rgba(22,119,255,0.1);
+  border: 1px solid rgba(22,119,255,0.1);
+}
+.chart-title {
+  font-size: 1.2rem;
+  color: #2d3748;
+  font-weight: 600;
+  margin-bottom: 16px;
+  text-align: center;
+}
+.radar-chart-container, .line-chart-container {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  /* 优化移动端触摸体验 */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.radar-tip {
+  text-align: center;
+  color: #718096;
+  font-size: 0.9rem;
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(22,119,255,0.05);
+  border-radius: 6px;
+  border: 1px solid rgba(22,119,255,0.1);
+}
+.radar-tooltip {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-size: 0.9rem;
+}
+.tooltip-title {
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+.tooltip-content {
+  color: #4a5568;
+}
+.tooltip-content div {
+  margin-bottom: 4px;
+}
+.tooltip-content div:last-child {
+  margin-bottom: 0;
+}
+.subject-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 16px;
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+}
+.subject-selector label {
+  font-weight: 600;
+  color: #2d3748;
+  white-space: nowrap;
+}
+.subject-select {
+  flex: 1;
+  padding: 8px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #2d3748;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  /* 优化移动端选择器 */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 16px;
+  padding-right: 32px;
+}
+.subject-select:focus {
+  outline: none;
+  border-color: #1677ff;
+}
+.trend-mode-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 16px;
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+}
+.trend-mode-selector label {
+  font-weight: 600;
+  color: #2d3748;
+  white-space: nowrap;
+}
+.trend-mode-buttons {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+.trend-mode-btn {
+  flex: 1;
+  padding: 8px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4a5568;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.trend-mode-btn:hover {
+  border-color: #1677ff;
+  color: #1677ff;
+}
+.trend-mode-btn.active {
+  background: #1677ff;
+  color: #fff;
+  border-color: #1677ff;
+}
+.trend-mode-btn.active:hover {
+  background: #0958d9;
+}
+/* 图表容器移动端优化 */
+.chart-touch-optimized {
+  position: relative;
+  overflow: hidden;
+}
+.chart-touch-optimized svg {
+  /* 确保SVG在移动端正确显示 */
+  max-width: 100%;
+  height: auto;
+}
+/* 移动端图表交互优化 */
+@media (max-width: 700px) {
+  .score-analysis-container {
+    margin: 8px;
+    padding: 16px 8px;
+    border-radius: 12px;
+  }
+  .analysis-title {
+    font-size: 1.4rem;
+  }
+  .exam-name {
+    font-size: 1.1rem;
+  }
+  .chart-section {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .chart-title {
+    font-size: 1.1rem;
+  }
+  .radar-chart-container, .line-chart-container {
+    padding: 12px;
+    /* 移动端图表容器优化 */
+    min-height: 300px;
+  }
+  .subject-selector {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 12px;
+  }
+  .subject-selector label {
+    text-align: center;
+  }
+  .trend-mode-selector {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 12px;
+  }
+  .trend-mode-selector label {
+    text-align: center;
+  }
+  .trend-mode-buttons {
+    flex-direction: row;
+  }
+  .subject-select {
+    /* 移动端选择器优化 */
+    font-size: 16px; /* 防止iOS缩放 */
+    padding: 12px;
+    padding-right: 40px;
+  }
+  /* 移动端图表标签优化 */
+  .recharts-polar-angle-axis-tick text,
+  .recharts-cartesian-axis-tick text {
+    font-size: 10px !important;
+  }
+  /* 移动端图表提示框优化 */
+  .recharts-tooltip-wrapper {
+    z-index: 1000;
+  }
+  .recharts-tooltip-content {
+    font-size: 12px !important;
+  }
+}
+/* 超小屏幕优化 */
+@media (max-width: 480px) {
+  .radar-chart-container, .line-chart-container {
+    min-height: 250px;
+  }
+  .chart-section {
+    padding: 12px;
+  }
+  .analysis-title {
+    font-size: 1.3rem;
+  }
+} 

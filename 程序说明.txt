@@ -1,0 +1,470 @@
+一、程序介绍：
+特点：网页程序，优美的现代UI界面，合理的交互设计，流畅的过度动画，清晰的文件结构，适应手机和电脑端
+说明：模拟手机应用“生学堂”发送请求获取成绩数据并提供分析的网页程序。用户登录授权，模拟用户登录，获取数据，存储数据。
+二、详细功能及原理：
+1、用户登录界面
+	界面：密码登录和验证码登录两种模式可切换，登录按钮下方需要同意相关协议才能登录。暂时不生成协议
+	密码登录请求示例：
+POST /passport/api/auth/login HTTP/1.1
+appType: student
+operatingSystem: android
+pid: SXT
+Content-Type: application/json;charset=UTF-8
+Content-Length: 131
+User-Agent: Dalvik/2.1.0 (Linux; U; Android 12)
+Host: api.sxw.cn
+Connection: Keep-Alive
+Accept-Encoding: gzip（注意这些参数为请求头必须含有参数）
+
+{"app":"SXT","password":"yJSehXfZy24DtXGwbTAoIA==","accountType":0,"client":"STUDENT","account":"13980617918","platform":"ANDROID"}
+用户提交登录时，手机号码为account，密码为password（需要进行加密后提交，加密函数见文档下方），你需要保证请求头与示例完全一致，请求头其他内容不做更改
+登录成功的响应体：
+{
+  "code" : 200,
+  "message" : "OK",
+  "data" : {
+    "token" : "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJqd3QiLCJzdWIiOiJ7XCJhY2NvdW50SWRcIjpcIjY1YjMxNDNlMWIzOTFlMWQ4Y2ViMDNiNVwiLFwiYWNjb3VudFR5cGVcIjowLFwiYXBwXCI6XCJTWFRcIixcImNsaWVudFwiOlwiU1RVREVOVFwiLFwiZW1wdHlcIjpmYWxzZSxcInBsYXRmb3JtXCI6XCJBTkRST0lEXCIsXCJ1c2VySWRcIjpcIjY1YjA5OGNiMzJkOTQyM2FhYWIyYjhlNVwifSIsImV4cCI6MTc1Mzc5MjA3NiwiaXNzIjoic3hqeSJ9.XwVcnMUEW-l-qDC8EkjQjHK4W0QjYkiUB_UkNB9QmhQ",
+    "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJqd3QiLCJzdWIiOiJleUpoWTJOdmRXNTBTV1FpT2lJMk5XSXpNVFF6WlRGaU16a3haVEZrT0dObFlqQXpZalVpTENKaFkyTnZkVzUwVkhsd1pTSTZNQ3dpWVhCd0lqb2lVMWhVSWl3aVkyeHBaVzUwSWpvaVUxUlZSRVZPVkNJc0ltVnRjSFI1SWpwbVlXeHpaU3dpY0d4aGRHWnZjbTBpT2lKQlRrUlNUMGxFSWl3aWRYTmxja2xrSWpvaU5qVmlNRGs0WTJJek1tUTVOREl6WVdGaFlqSmlPR1UxSW4wPSIsImV4cCI6MTc1ODk3NjA3NiwiaXNzIjoic3hqeSJ9.0ivQmvOIBbIZ-RBb2OzzkxzmlyTE5_Do75kIY8qZ424",
+    "tokenExpiryDate" : 864000,
+    "refreshTokenExpiryDate" : 6048000,
+    "appCode" : "",
+    "appUrl" : "",
+    "sxAppId" : "",
+    "tokenType" : "",
+    "appName" : "",
+    "weakPassword" : false
+  },
+  "errorData" : "",
+  "success" : true,
+  "traceId" : "0831f09d-134e-42fb-b899-669621de5969",
+  "alg" : "SALT_MD5"
+}
+登录失败的响应体：
+{
+"alg": "SALT_MD5",
+"code": 8072401,
+"data": "",
+"errorData": "",
+"message": "用户名或者密码错误",
+"success": false,
+"traceId": "5ba09a57-a256-4ebc-af16-b972009842ec"
+}
+	验证码登录请求示例
+	首先是点击发送验证码按钮，发送验证码，发送后60s后才能从新发送
+	请求地址POST /passport/api/sms/send_auth_code?phoneNumber=13980617918 HTTP/1.1
+	Host: api.sxw.cn 请求头不变
+	验证发送成功的响应：
+	{
+  "code" : 200,
+  "message" : "OK",
+  "data" : true,
+  "errorData" : "",
+  "success" : true,
+  "traceId" : "3ee9242d-a98a-4fea-b3fa-cbafec7dbc64",
+  "alg" : "SALT_MD5"
+}
+验证码提交接口为POST /passport/api/sms/valid_auth_code?phoneNumber=13980617918&authCode=539792 HTTP/1.1
+如果验证码正确返回
+	{
+  "code" : 200,
+  "message" : "OK",
+  "data" : true,
+  "errorData" : "",
+  "success" : true,
+  "traceId" : "3ee9242d-a98a-4fea-b3fa-cbafec7dbc64",
+  "alg" : "SALT_MD5"
+}否则success返回false
+验证码正确后会请求POST /passport/api/auth/login HTTP/1.1 Host: api.sxw.cn
+内容为{"app":"SXT","password":"Z4c8DxrAAIPGSOwkJSLpZQ==","accountType":8,"client":"STUDENT","account":"13980617918","platform":"ANDROID"}
+其中的password为输入的验证码（authCode）带入加密函数后的结果，构造时应保证其他内容不变
+服务器会返回{
+  "code" : 200,
+  "message" : "OK",
+  "data" : {
+    "token" : "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJqd3QiLCJzdWIiOiJ7XCJhY2NvdW50SWRcIjpcIjY1YjMxNDNlMWIzOTFlMWQ4Y2ViMDNiNVwiLFwiYWNjb3VudFR5cGVcIjo4LFwiYXBwXCI6XCJTWFRcIixcImNsaWVudFwiOlwiU1RVREVOVFwiLFwiZW1wdHlcIjpmYWxzZSxcInBsYXRmb3JtXCI6XCJBTkRST0lEXCIsXCJ1c2VySWRcIjpcIjY1YjA5OGNiMzJkOTQyM2FhYWIyYjhlNVwifSIsImV4cCI6MTc1Mzc5MTU5NywiaXNzIjoic3hqeSJ9.eGuZgJtRU_G44q9brLyf3MeeGhaBx19B1B4OEW8wySA",
+    "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJqd3QiLCJzdWIiOiJleUpoWTJOdmRXNTBTV1FpT2lJMk5XSXpNVFF6WlRGaU16a3haVEZrT0dObFlqQXpZalVpTENKaFkyTnZkVzUwVkhsd1pTSTZPQ3dpWVhCd0lqb2lVMWhVSWl3aVkyeHBaVzUwSWpvaVUxUlZSRVZPVkNJc0ltVnRjSFI1SWpwbVlXeHpaU3dpY0d4aGRHWnZjbTBpT2lKQlRrUlNUMGxFSWl3aWRYTmxja2xrSWpvaU5qVmlNRGs0WTJJek1tUTVOREl6WVdGaFlqSmlPR1UxSW4wPSIsImV4cCI6MTc1ODk3NTU5NywiaXNzIjoic3hqeSJ9.CkCpECvgaXMpVYscyYcfn5IQ_YgqJJEehO3ZGXJb2yY",
+    "tokenExpiryDate" : 864000,
+    "refreshTokenExpiryDate" : 6048000,
+    "appCode" : "",
+    "appUrl" : "",
+    "sxAppId" : "",
+    "tokenType" : "",
+    "appName" : "",
+    "weakPassword" : false
+  },
+  "errorData" : "",
+  "success" : true,
+  "traceId" : "3105ff7a-fdaf-43d8-9f0b-5d7dba199b2e",
+  "alg" : "SALT_MD5"
+}
+如果密码登录成功，需要在后台明文保存用户密码
+2、用户信息界面
+	界面展示用户相关信息：姓名、学校名称、年级、班级等信息（注意：不要显示phoneNumber、idnumber这两个信息）下方区域有一个刷新考试列表按钮和获取的考试列表
+接下来通过其中一种方式拿到的TOKEN获取用户信息，示例为
+GET /platform/api/user/get_user_info/1 HTTP/1.1
+TOKEN: eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJqd3QiLCJzdWIiOiJ7XCJhY2NvdW50SWRcIjpcIjY1YjMxNDNlMWIzOTFlMWQ4Y2ViMDNiNVwiLFwiYWNjb3VudFR5cGVcIjo4LFwiYXBwXCI6XCJTWFRcIixcImNsaWVudFwiOlwiU1RVREVOVFwiLFwiZW1wdHlcIjpmYWxzZSxcInBsYXRmb3JtXCI6XCJBTkRST0lEXCIsXCJ1c2VySWRcIjpcIjY1YjA5OGNiMzJkOTQyM2FhYWIyYjhlNVwifSIsImV4cCI6MTc1MzI0OTcyNiwiaXNzIjoic3hqeSJ9.Sy0pJmarvjn3D1CqYrCn1unIMuwkI54VrSbcTgZ7fcM
+Content-Type: application/json
+appType: student
+operatingSystem: android
+pid: SXT
+User-Agent: Dalvik/2.1.0 (Linux; U; Android 12)
+Host: api.sxw.cn
+Connection: Keep-Alive
+Accept-Encoding: gzip
+服务器会返回
+{
+  "code" : 200,
+  "message" : "OK",
+  "data" : {
+    "userSimpleDTO" : {
+      "id" : "65b098cb32d9423aaab2b8e5",
+      "accountId" : "",
+      "areaId" : "22",
+      "provinceId" : "510000",
+      "cityId" : "1",
+      "regionId" : "12",
+      "name" : "林佳豪",
+      "phoneNumber" : "13980617918",
+      "idnumber" : "510704200802200312",
+      "portraitUrl" : "",
+      "studentRoll" : "",
+      "teaching" : "",
+      "userType" : "STUDENT",
+      "sxwNumber" : "8672767"
+    },
+    "areaDTO" : {
+      "id" : "22",
+      "name" : "绵阳实验高中",
+      "areaId" : "",
+      "areaName" : "",
+      "areaLevel" : 3
+    },
+    "classComplexDTO" : {
+      "classSimpleDTO" : {
+        "id" : "65af62be1b391e1d8ce6f895",
+        "name" : "高2023级18班",
+        "artOrScience" : 0,
+        "classType" : 1
+      },
+      "gradeComplexDTO" : {
+        "gradeId" : "64b92e103b12ce2905e43647",
+        "gradeName" : "高2023级",
+        "year" : 2023,
+        "state" : false,
+        "periodId" : "4",
+        "periodName" : "高中",
+        "yearLevel" : 3,
+        "gradeLevelId" : "8184a605-6026-43ac-924b-e38b87b5d6a4",
+        "gradeLevelName" : "高二",
+        "graduatedGrade" : false
+      }
+    },
+    "courseComplexDTOS" : [ ],
+    "childDTOs" : [ ]
+  },
+  "errorData" : "",
+  "success" : true,
+  "traceId" : "af60952f-a724-4ced-8801-d3fa9768eace",
+  "alg" : "SALT_MD5"
+}
+此时后端需要与明文密码一起保存该用户的所有信息，如果已经保存过则更新需要储存userSimpleDTO中的用户id这为后续数据获取提供关键。
+获取考试列表请求为
+POST /sxt-h5/api/gateway/exam/ExamQueryApi_pageForStudent h2
+host: portal.sxw.cn
+content-length: 167
+accept: application/json, text/plain, */*
+role-code: undefined
+user-agent: sxt_android3.3.5
+role-user-id: 65b098cb32d9423aaab2b8e5
+content-type: application/json;charset=UTF-8
+origin: https://portal.sxw.cn
+x-requested-with: com.sxt.student
+sec-fetch-site: same-origin
+sec-fetch-mode: cors
+sec-fetch-dest: empty
+referer: https://portal.sxw.cn/sxt-h5/page/consult/list_student/?new=1
+accept-encoding: gzip, deflate, br
+accept-language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7
+cookie: uid=rBBlfWhzMOQjeGET52EaAg==
+cookie: acw_tc=0a45646e17523857296495306eded526b24a0155494d56b3ac33c32450f18f
+cookie: sxt_h5_token_prod=eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJqd3QiLCJzdWIiOiJ7XCJhY2NvdW50SWRcIjpcIjY1YjMxNDNlMWIzOTFlMWQ4Y2ViMDNiNVwiLFwiYWNjb3VudFR5cGVcIjo4LFwiYXBwXCI6XCJTWFRcIixcImNsaWVudFwiOlwiU1RVREVOVFwiLFwiZW1wdHlcIjpmYWxzZSxcInBsYXRmb3JtXCI6XCJBTkRST0lEXCIsXCJ1c2VySWRcIjpcIjY1YjA5OGNiMzJkOTQyM2FhYWIyYjhlNVwifSIsImV4cCI6MTc1MzI0OTcyNiwiaXNzIjoic3hqeSJ9.Sy0pJmarvjn3D1CqYrCn1unIMuwkI54VrSbcTgZ7fcM
+cookie: sxt_h5_token_prod_refresh=eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJqd3QiLCJzdWIiOiJleUpoWTJOdmRXNTBTV1FpT2lJMk5XSXpNVFF6WlRGaU16a3haVEZrT0dObFlqQXpZalVpTENKaFkyTnZkVzUwVkhsd1pTSTZPQ3dpWVhCd0lqb2lVMWhVSWl3aVkyeHBaVzUwSWpvaVUxUlZSRVZPVkNJc0ltVnRjSFI1SWpwbVlXeHpaU3dpY0d4aGRHWnZjbTBpT2lKQlRrUlNUMGxFSWl3aWRYTmxja2xrSWpvaU5qVmlNRGs0WTJJek1tUTVOREl6WVdGaFlqSmlPR1UxSW4wPSIsImV4cCI6MTc1ODQzMzcyNiwiaXNzIjoic3hqeSJ9.Jao0ZsBLQ9fO9agMY1ZK7Ibnge84E8ug2qX3vM6BAXA
+
+{"isLoading":true,"body":{"pageableDto":{"page":1,"size":10},"isObjective":false,"semesterId":"","studentAccountId":"65b098cb32d9423aaab2b8e5","notNeedNceExam":false}}
+需要特别注意：role-user-id和studentAccountId为userSimpleDTO中的id、sxt_h5_token_prod、sxt_h5_token_prod_refresh为登录时获取到的token，请注意请求格式，避免格式错误导致服务器不返回正确参数
+在考试列表下方显示显示的页数和每页显示的数量，默认"page":1,"size":10
+
+服务器会返回以下示例信息
+{"code":200,"message":"OK","data":{"totalCount":4,"currentPage":1,"pageSize":10,"totalPage":1,"dataList":[{"id":"68623675e8610928c9f8f5c6","name":"绵阳市高中2023级第二学年末教学质量测试","level":0,"gradeId":"64b92e103b12ce2905e43647","gradeName":"高2023级","startTime":"2025-07-04","releaseTime":"2025-07-11 15:41:45","schoolCount":36,"classCount":723,"examCount":35045,"state":7,"hasUploadRollno":true,"calculateState":3,"stateDetail":null,"knowledgeStateDetail":null,"semesterId":"48","orgId":"1","hasSplit":false,"phase":4,"periodId":"4","type":1,"teachMode":10,"hasNetworkExamFromMark":false,"isPublishObjectiveState":false,"hasShowMarkTrace":false,"partPublishState":5,"hasPublishCourses":[],"viewScore":false,"studentNotSeeRanks":"0,1","viewStudentQuestionScore":true,"isUnionExamAndCreateSchool":false,"showOriginalPaperRoles":""},{"id":"6777614fc5447c021697d9de","name":"绵阳市高中2023级第三学期期末教学质量测试","level":0,"gradeId":"64b92e103b12ce2905e43647","gradeName":"高2023级","startTime":"2025-01-12","releaseTime":"2025-01-21 09:32:11","schoolCount":35,"classCount":722,"examCount":36926,"state":7,"hasUploadRollno":true,"calculateState":3,"stateDetail":null,"knowledgeStateDetail":null,"semesterId":"47","orgId":"1","hasSplit":false,"phase":4,"periodId":"4","type":1,"teachMode":10,"hasNetworkExamFromMark":false,"isPublishObjectiveState":false,"hasShowMarkTrace":false,"partPublishState":5,"hasPublishCourses":[],"viewScore":false,"studentNotSeeRanks":"","viewStudentQuestionScore":true,"isUnionExamAndCreateSchool":false,"showOriginalPaperRoles":""},{"id":"668cf4945dc8f671177dfc3e","name":"绵阳市高中2023级第一学年末教学质量测试","level":0,"gradeId":"64b92e103b12ce2905e43647","gradeName":"高2023级","startTime":"2024-07-05","releaseTime":"2024-07-12 22:17:24","schoolCount":34,"classCount":714,"examCount":36750,"state":7,"hasUploadRollno":true,"calculateState":3,"stateDetail":null,"knowledgeStateDetail":null,"semesterId":"46","orgId":"1","hasSplit":false,"phase":4,"periodId":"4","type":1,"teachMode":1,"hasNetworkExamFromMark":false,"isPublishObjectiveState":false,"hasShowMarkTrace":false,"partPublishState":5,"hasPublishCourses":[],"viewScore":false,"studentNotSeeRanks":"0,1,2","viewStudentQuestionScore":true,"isUnionExamAndCreateSchool":false,"showOriginalPaperRoles":""},{"id":"65b0c48d80779d3a8b058afe","name":"绵阳市高中2023级第一学期期末教学质量测试","level":0,"gradeId":"64b92e103b12ce2905e43647","gradeName":"高2023级","startTime":"2024-01-18","releaseTime":"2024-01-26 09:56:52","schoolCount":36,"classCount":714,"examCount":37991,"state":7,"hasUploadRollno":true,"calculateState":3,"stateDetail":null,"knowledgeStateDetail":null,"semesterId":"45","orgId":"1","hasSplit":false,"phase":4,"periodId":"4","type":1,"teachMode":1,"hasNetworkExamFromMark":false,"isPublishObjectiveState":false,"hasShowMarkTrace":false,"partPublishState":5,"hasPublishCourses":[],"viewScore":false,"studentNotSeeRanks":"0,1,2","viewStudentQuestionScore":true,"isUnionExamAndCreateSchool":false,"showOriginalPaperRoles":""}]},"errorData":"","success":true,"traceId":"492b07c0-fb8a-4d3f-97fc-04dec369ee30","alg":"SALT_MD5","systemNotice":null}
+你需要显示出考试详细信息，注意设计布局
+3、当用户点击某一次考试时进入考试成绩页面
+例如选择的examId":"68623675e8610928c9f8f5c6"请求为POST /sxt-h5/api/gateway/analysis/AnalysisMobileStudentApi_findScoreList h2
+host: portal.sxw.cn
+content-length: 93
+accept: application/json, text/plain, */*
+role-code: undefined
+user-agent: sxt_android3.3.5
+role-user-id: 65b098cb32d9423aaab2b8e5
+content-type: application/json;charset=UTF-8
+origin: https://portal.sxw.cn
+x-requested-with: com.sxt.student
+sec-fetch-site: same-origin
+sec-fetch-mode: cors
+sec-fetch-dest: empty
+referer: https://portal.sxw.cn/sxt-h5/page/consult/detail_student/?examId=68623675e8610928c9f8f5c6&examName=%E7%BB%B5%E9%98%B3%E5%B8%82%E9%AB%98%E4%B8%AD2023%E7%BA%A7%E7%AC%AC%E4%BA%8C%E5%AD%A6%E5%B9%B4%E6%9C%AB%E6%95%99%E5%AD%A6%E8%B4%A8%E9%87%8F%E6%B5%8B%E8%AF%95&examType=1&level=0
+accept-encoding: gzip, deflate, br
+accept-language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7
+cookie: uid=rBBlfWhzMOQjeGET52EaAg==
+cookie: acw_tc=0a45646e17523857296495306eded526b24a0155494d56b3ac33c32450f18f
+cookie: sxt_h5_token_prod=eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJqd3QiLCJzdWIiOiJ7XCJhY2NvdW50SWRcIjpcIjY1YjMxNDNlMWIzOTFlMWQ4Y2ViMDNiNVwiLFwiYWNjb3VudFR5cGVcIjo4LFwiYXBwXCI6XCJTWFRcIixcImNsaWVudFwiOlwiU1RVREVOVFwiLFwiZW1wdHlcIjpmYWxzZSxcInBsYXRmb3JtXCI6XCJBTkRST0lEXCIsXCJ1c2VySWRcIjpcIjY1YjA5OGNiMzJkOTQyM2FhYWIyYjhlNVwifSIsImV4cCI6MTc1MzI0OTcyNiwiaXNzIjoic3hqeSJ9.Sy0pJmarvjn3D1CqYrCn1unIMuwkI54VrSbcTgZ7fcM
+cookie: sxt_h5_token_prod_refresh=eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJqd3QiLCJzdWIiOiJleUpoWTJOdmRXNTBTV1FpT2lJMk5XSXpNVFF6WlRGaU16a3haVEZrT0dObFlqQXpZalVpTENKaFkyTnZkVzUwVkhsd1pTSTZPQ3dpWVhCd0lqb2lVMWhVSWl3aVkyeHBaVzUwSWpvaVUxUlZSRVZPVkNJc0ltVnRjSFI1SWpwbVlXeHpaU3dpY0d4aGRHWnZjbTBpT2lKQlRrUlNUMGxFSWl3aWRYTmxja2xrSWpvaU5qVmlNRGs0WTJJek1tUTVOREl6WVdGaFlqSmlPR1UxSW4wPSIsImV4cCI6MTc1ODQzMzcyNiwiaXNzIjoic3hqeSJ9.Jao0ZsBLQ9fO9agMY1ZK7Ibnge84E8ug2qX3vM6BAXA
+
+{"isLoading":true,"examId":"68623675e8610928c9f8f5c6","accountId":"65b098cb32d9423aaab2b8e5"}
+响应为
+{"code":200,"message":"OK","data":[{"examId":"68623675e8610928c9f8f5c6","examCourseId":"68623675e8610928c9f8f5d1","courseId":"","courseName":"总分","courseType":2,"classId":"65af62be1b391e1d8ce6f895","rank":8733,"countyRank":6270,"schoolRank":383,"classRank":43,"gainScore":484,"level":0,"type":1,"hasRegionExam":false,"ratio":0.6641,"countyRatio":0.4865,"schoolRatio":0.688,"viewScore":false,"classRatio":0.295,"cityStudentCount":"","countyStudentCount":"","schoolStudentCount":"","classStudentCount":"","details":[{"lineId":"6870bac4fbe31e4dae82559a","lineName":"A0","remark":"","lineScore":607,"scoreLineNum":16},{"lineId":"6870bac4fbe31e4dae82559b","lineName":"A","remark":"","lineScore":517,"scoreLineNum":514}],"classAverage":[],"nceGainScore":531,"courseChooseTrend":1,"needAssignScore":true},{"examId":"68623675e8610928c9f8f5c6","examCourseId":"68623675e8610928c9f8f5c7","courseId":"31","courseName":"语文","courseType":0,"classId":"65af62be1b391e1d8ce6f895","rank":22206,"countyRank":11306,"schoolRank":1166,"classRank":59,"gainScore":92,"level":0,"type":1,"hasRegionExam":false,"ratio":0.1396,"countyRatio":0.0714,"schoolRatio":0.0513,"viewScore":false,"classRatio":0.0163,"cityStudentCount":"","countyStudentCount":"","schoolStudentCount":"","classStudentCount":"","details":[{"lineId":"6870bac4fbe31e4dae82559d","lineName":"B","remark":"","lineScore":95,"scoreLineNum":1129},{"lineId":"6870bac4fbe31e4dae82559e","lineName":"Y","remark":"","lineScore":80,"scoreLineNum":1228}],"classAverage":[],"nceGainScore":92,"courseChooseTrend":1,"needAssignScore":false},{"examId":"68623675e8610928c9f8f5c6","examCourseId":"68623675e8610928c9f8f5c8","courseId":"32","courseName":"数学","courseType":0,"classId":"65af62be1b391e1d8ce6f895","rank":12008,"countyRank":7723,"schoolRank":640,"classRank":53,"gainScore":90,"level":0,"type":1,"hasRegionExam":false,"ratio":0.5298,"countyRatio":0.3594,"schoolRatio":0.4659,"viewScore":false,"classRatio":0.1311,"cityStudentCount":"","countyStudentCount":"","schoolStudentCount":"","classStudentCount":"","details":[{"lineId":"6870bac4fbe31e4dae82559b","lineName":"A","remark":"","lineScore":96,"scoreLineNum":512},{"lineId":"6870bac4fbe31e4dae82559c","lineName":"T","remark":"","lineScore":85,"scoreLineNum":774}],"classAverage":[],"nceGainScore":90,"courseChooseTrend":1,"needAssignScore":false},{"examId":"68623675e8610928c9f8f5c6","examCourseId":"68623675e8610928c9f8f5c9","courseId":"33","courseName":"英语","courseType":0,"classId":"65af62be1b391e1d8ce6f895","rank":11880,"countyRank":7836,"schoolRank":556,"classRank":41,"gainScore":99,"level":0,"type":1,"hasRegionExam":false,"ratio":0.5253,"countyRatio":0.3467,"schoolRatio":0.525,"viewScore":false,"classRatio":0.2459,"cityStudentCount":"","countyStudentCount":"","schoolStudentCount":"","classStudentCount":"","details":[{"lineId":"6870bac4fbe31e4dae82559b","lineName":"A","remark":"","lineScore":104,"scoreLineNum":426},{"lineId":"6870bac4fbe31e4dae82559c","lineName":"T","remark":"","lineScore":95,"scoreLineNum":713}],"classAverage":[],"nceGainScore":99,"courseChooseTrend":1,"needAssignScore":false},{"examId":"68623675e8610928c9f8f5c6","examCourseId":"68623675e8610928c9f8f5ca","courseId":"34","courseName":"物理","courseType":0,"classId":"65af62be1b391e1d8ce6f895","rank":804,"countyRank":589,"schoolRank":13,"classRank":3,"gainScore":85,"level":0,"type":1,"hasRegionExam":false,"ratio":0.9646,"countyRatio":0.9445,"schoolRatio":0.9887,"viewScore":false,"classRatio":0.9344,"cityStudentCount":"","countyStudentCount":"","schoolStudentCount":"","classStudentCount":"","details":[{"lineId":"6870bac4fbe31e4dae82559a","lineName":"A0","remark":"","lineScore":77,"scoreLineNum":57}],"classAverage":[],"nceGainScore":85,"courseChooseTrend":1,"needAssignScore":false},{"examId":"68623675e8610928c9f8f5c6","examCourseId":"68623675e8610928c9f8f5cb","courseId":"35","courseName":"化学","courseType":0,"classId":"65af62be1b391e1d8ce6f895","rank":8748,"countyRank":5761,"schoolRank":454,"classRank":39,"gainScore":52,"level":0,"type":1,"hasRegionExam":false,"ratio":0.6225,"countyRatio":0.486,"schoolRatio":0.5846,"viewScore":false,"classRatio":0.3442,"cityStudentCount":"","countyStudentCount":"","schoolStudentCount":"","classStudentCount":"","details":[{"lineId":"6870bac4fbe31e4dae82559a","lineName":"A0","remark":"","lineScore":91,"scoreLineNum":49},{"lineId":"6870bac4fbe31e4dae82559b","lineName":"A","remark":"","lineScore":81,"scoreLineNum":542}],"classAverage":[],"nceGainScore":82,"courseChooseTrend":1,"needAssignScore":true},{"examId":"68623675e8610928c9f8f5c6","examCourseId":"68623675e8610928c9f8f5cc","courseId":"36","courseName":"生物","courseType":0,"classId":"65af62be1b391e1d8ce6f895","rank":6660,"countyRank":4452,"schoolRank":228,"classRank":32,"gainScore":66,"level":0,"type":1,"hasRegionExam":false,"ratio":0.6275,"countyRatio":0.4702,"schoolRatio":0.7076,"viewScore":false,"classRatio":0.4098,"cityStudentCount":"","countyStudentCount":"","schoolStudentCount":"","classStudentCount":"","details":[{"lineId":"6870bac4fbe31e4dae82559a","lineName":"A0","remark":"","lineScore":91,"scoreLineNum":36},{"lineId":"6870bac4fbe31e4dae82559b","lineName":"A","remark":"","lineScore":82,"scoreLineNum":278}],"classAverage":[],"nceGainScore":83,"courseChooseTrend":1,"needAssignScore":true}],"errorData":"","success":true,"traceId":"03a006b1-5703-41f3-8e96-99e45929226c","alg":"SALT_MD5","systemNotice":null}
+
+这里提供一个成绩单代码示例：
+// 处理数据并生成报告
+        function processData(data) {
+            if (!data.success || !data.data) {
+                alert("无效的成绩数据格式");
+                return;
+            }
+            
+            // 显示报告区域
+            document.getElementById('reportSection').classList.remove('hidden');
+            
+            // 生成报告HTML
+            const reportContent = generateReport(data);
+            document.getElementById('reportContent').innerHTML = reportContent;
+        }
+
+        // 生成报告HTML
+        function generateReport(data) {
+            const exam = data.data[0];
+            const date = new Date().toLocaleString();
+            
+            // 计算分数线等级
+            function getGradeLevel(score, details) {
+                if (!details || details.length === 0) return "";
+                
+                // 按分数线从高到低排序
+                const sortedLines = [...details].sort((a, b) => b.lineScore - a.lineScore);
+                
+                for (const line of sortedLines) {
+                    if (score >= line.lineScore) {
+                        return line.lineName;
+                    }
+                }
+                
+                return "Y";
+            }
+            
+            // 生成分数线HTML
+            function generateScoreLines(details) {
+                if (!details || details.length === 0) return "";
+                
+                // 按分数线从高到低排序
+                const sortedLines = [...details].sort((a, b) => b.lineScore - a.lineScore);
+                
+                return sortedLines.map(line => {
+                    return `<div class="score-line">${line.lineName} ${line.lineScore}分（${line.scoreLineNum}人）</div>`;
+                }).join('');
+            }
+            
+            // 生成表格行
+            const tableRows = data.data.map(subject => {
+                const hasAssignedScore = subject.needAssignScore;
+                const finalScore = hasAssignedScore ? subject.nceGainScore : subject.gainScore;
+                const rawScoreDisplay = hasAssignedScore ? `（原始分：${subject.gainScore}）` : '';
+                
+                // 计算参考人数
+                const cityStudents = Math.round(subject.rank / (1 - subject.ratio));
+                const countyStudents = Math.round(subject.countyRank / (1 - subject.countyRatio));
+                const schoolStudents = Math.round(subject.schoolRank / (1 - subject.schoolRatio));
+                
+                // 确定等级
+                const gradeLevel = getGradeLevel(finalScore, subject.details);
+                const gradeClass = `level-${gradeLevel}`;
+                
+                return `
+                    <tr>
+                        <td>${subject.courseName}</td>
+                        <td>${finalScore}${rawScoreDisplay}</td>
+                        <td><span class="score-level ${gradeClass}">${gradeLevel}</span></td>
+                        <td>${subject.rank}</td>
+                        <td>${subject.countyRank}</td>
+                        <td>${subject.schoolRank}</td>
+                        <td>${subject.classRank}</td>
+                        <td>${(subject.ratio * 100).toFixed(2)}%<br><span style="font-size:12px;color:#666;">（推测参考人数：${cityStudents.toLocaleString()}人）</span></td>
+                        <td>${(subject.countyRatio * 100).toFixed(2)}%<br><span style="font-size:12px;color:#666;">（推测参考人数：${countyStudents.toLocaleString()}人）</span></td>
+                        <td>${(subject.schoolRatio * 100).toFixed(2)}%<br><span style="font-size:12px;color:#666;">（推测参考人数：${schoolStudents.toLocaleString()}人）</span></td>
+                        <td>${generateScoreLines(subject.details)}</td>
+                    </tr>
+                `;
+            }).join('');
+            
+            return `
+                <div class="header">
+                    <h1>考试成绩分析报告</h1>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">考试ID</div>
+                            <div class="info-value">${exam.examId}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">班级ID</div>
+                            <div class="info-value" id="classIdValue">${exam.classId}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">追踪ID</div>
+                            <div class="info-value" id="traceIdValue">${data.traceId}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">加密算法</div>
+                            <div class="info-value">${data.alg}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>科目</th>
+                            <th>分数</th>
+                            <th>等级</th>
+                            <th>全市排名</th>
+                            <th>区排名</th>
+                            <th>学校排名</th>
+                            <th>班级排名</th>
+                            <th>市占比</th>
+                            <th>区占比</th>
+                            <th>校占比</th>
+                            <th>分数线</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+                
+                <div class="footer">
+                    <div class="footer-section">
+                        <div class="footer-title">成绩等级说明</div>
+                        <div class="footer-content">
+                            <p><span class="grade-indicator level-A0">A0</span> 顶尖水平（前5%）</p>
+                            <p><span class="grade-indicator level-A">A</span> 优秀水平（前15%）</p>
+                            <p><span class="grade-indicator level-T">T</span> 特控线（重点大学线）</p>
+                            <p><span class="grade-indicator level-B">B</span> 本科线</p>
+                            <p><span class="grade-indicator level-Y">Y</span> 预警线（需特别注意）</p>
+                        </div>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <div class="footer-title">分析说明</div>
+                        <div class="footer-content">
+                            <p>• 占比值表示超过同范围考生的百分比</p>
+                            <p>• 分数线按分数从高到低排序</p>
+                            <p>• 赋分科目显示原始分供参考</p>
+                        </div>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <div class="footer-title">数据信息</div>
+                        <div class="footer-content">
+                            <p><strong>生成时间：</strong> ${date}</p>
+                            <p><strong>数据算法：</strong> ${data.alg}</p>
+                            <p><strong>状态：</strong> ${data.success ? '成功' : '失败'}</p>
+                            <p><strong>消息：</strong> ${data.message}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+你需要注意赋分科目的解读
+4、点击科目名称，进入该科目小题得分页面
+选择示例数据语文的示例POST /sxt-h5/api/gateway/analysis/AnalysisMobileStudentApi_findStudentQuestion h2
+host: portal.sxw.cn
+content-length: 158
+accept: application/json, text/plain, */*
+role-code: undefined
+user-agent: sxt_android3.3.5
+role-user-id: 65b098cb32d9423aaab2b8e5
+content-type: application/json;charset=UTF-8
+origin: https://portal.sxw.cn
+x-requested-with: com.sxt.student
+sec-fetch-site: same-origin
+sec-fetch-mode: cors
+sec-fetch-dest: empty
+referer: https://portal.sxw.cn/sxt-h5/page/consult/paper_student?classId=65af62be1b391e1d8ce6f895&examCourseId=68623675e8610928c9f8f5c7&examType=1&level=0&courseChooseTrend=1&viewOriginalPaper=0
+accept-encoding: gzip, deflate, br
+accept-language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7
+cookie: uid=rBBlfWhzMOQjeGET52EaAg==
+cookie: acw_tc=0a45646e17523857296495306eded526b24a0155494d56b3ac33c32450f18f
+cookie: sxt_h5_token_prod=eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJqd3QiLCJzdWIiOiJ7XCJhY2NvdW50SWRcIjpcIjY1YjMxNDNlMWIzOTFlMWQ4Y2ViMDNiNVwiLFwiYWNjb3VudFR5cGVcIjo4LFwiYXBwXCI6XCJTWFRcIixcImNsaWVudFwiOlwiU1RVREVOVFwiLFwiZW1wdHlcIjpmYWxzZSxcInBsYXRmb3JtXCI6XCJBTkRST0lEXCIsXCJ1c2VySWRcIjpcIjY1YjA5OGNiMzJkOTQyM2FhYWIyYjhlNVwifSIsImV4cCI6MTc1MzI0OTcyNiwiaXNzIjoic3hqeSJ9.Sy0pJmarvjn3D1CqYrCn1unIMuwkI54VrSbcTgZ7fcM
+cookie: sxt_h5_token_prod_refresh=eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJqd3QiLCJzdWIiOiJleUpoWTJOdmRXNTBTV1FpT2lJMk5XSXpNVFF6WlRGaU16a3haVEZrT0dObFlqQXpZalVpTENKaFkyTnZkVzUwVkhsd1pTSTZPQ3dpWVhCd0lqb2lVMWhVSWl3aVkyeHBaVzUwSWpvaVUxUlZSRVZPVkNJc0ltVnRjSFI1SWpwbVlXeHpaU3dpY0d4aGRHWnZjbTBpT2lKQlRrUlNUMGxFSWl3aWRYTmxja2xrSWpvaU5qVmlNRGs0WTJJek1tUTVOREl6WVdGaFlqSmlPR1UxSW4wPSIsImV4cCI6MTc1ODQzMzcyNiwiaXNzIjoic3hqeSJ9.Jao0ZsBLQ9fO9agMY1ZK7Ibnge84E8ug2qX3vM6BAXA
+
+{"isLoading":true,"classId":"65af62be1b391e1d8ce6f895","studentId":"65b098cb32d9423aaab2b8e5","examCourseId":"68623675e8610928c9f8f5c7","courseChooseTrend":1}
+响应内容为：
+{"code":200,"message":"OK","data":[{"questionId":"686b8499e8610928c90a79ef","questionNo":"1","sortNo":2,"pointName":"阅读与鉴赏;现代文阅读","abilityName":"理解B;分析综合C","score":3,"totalScore":3,"ratio":1,"classRatio":0.8333,"schoolRatio":0.8654,"countyRatio":"","cityRatio":0.8411,"examId":"68623675e8610928c9f8f5c6","questionType":1,"questionPid":"686de207e8610928c90c43a7"},{"questionId":"686b8499e8610928c90a79f0","questionNo":"2","sortNo":3,"pointName":"阅读与鉴赏;现代文阅读","abilityName":"理解B;分析综合C","score":0,"totalScore":3,"ratio":0,"classRatio":0.8667,"schoolRatio":0.8605,"countyRatio":"","cityRatio":0.8415,"examId":"68623675e8610928c9f8f5c6","questionType":1,"questionPid":"686de207e8610928c90c43a7"},{"questionId":"686b8499e8610928c90a79f1","questionNo":"3","sortNo":4,"pointName":"阅读与鉴赏;现代文阅读","abilityName":"理解B;分析综合C","score":0,"totalScore":3,"ratio":0,"classRatio":0.6667,"schoolRatio":0.717,"countyRatio":"","cityRatio":0.7152,"examId":"68623675e8610928c9f8f5c6","questionType":1,"questionPid":"686de207e8610928c90c43a7"},{"questionId":"686dcf50e8610928c90c4399","questionNo":"4","sortNo":5,"pointName":"阅读与鉴赏;现代文阅读","abilityName":"理解B;分析综合C","score":3,"totalScore":4,"ratio":0.75,"classRatio":0.6292,"schoolRatio":0.5951,"countyRatio":"","cityRatio":0.5914,"examId":"68623675e8610928c9f8f5c6","questionType":2,"questionPid":"686de207e8610928c90c43a7"},{"questionId":"686dcf50e8610928c90c439a","questionNo":"5","sortNo":6,"pointName":"阅读与鉴赏;现代文阅读","abilityName":"理解B;分析综合C","score":6,"totalScore":6,"ratio":1,"classRatio":0.6139,"schoolRatio":0.5753,"countyRatio":"","cityRatio":0.5941,"examId":"68623675e8610928c9f8f5c6","questionType":2,"questionPid":"686de207e8610928c90c43a7"},{"questionId":"686b8499e8610928c90a79f2","questionNo":"6","sortNo":8,"pointName":"阅读与鉴赏;现代文阅读","abilityName":"理解B;分析综合C","score":0,"totalScore":3,"ratio":0,"classRatio":0.6833,"schoolRatio":0.6318,"countyRatio":"","cityRatio":0.5996,"examId":"68623675e8610928c9f8f5c6","questionType":1,"questionPid":"686de207e8610928c90c43a8"},{"questionId":"686b8499e8610928c90a79f3","questionNo":"7","sortNo":9,"pointName":"阅读与鉴赏;现代文阅读","abilityName":"理解B;分析综合C","score":0,"totalScore":3,"ratio":0,"classRatio":0.85,"schoolRatio":0.8735,"countyRatio":"","cityRatio":0.8337,"examId":"68623675e8610928c9f8f5c6","questionType":1,"questionPid":"686de207e8610928c90c43a8"},{"questionId":"686dcf50e8610928c90c439b","questionNo":"8","sortNo":10,"pointName":"阅读与鉴赏;现代文阅读","abilityName":"理解B;分析综合C","score":4,"totalScore":4,"ratio":1,"classRatio":0.775,"schoolRatio":0.764,"countyRatio":"","cityRatio":0.7384,"examId":"68623675e8610928c9f8f5c6","questionType":2,"questionPid":"686de207e8610928c90c43a8"},{"questionId":"686dcf50e8610928c90c439c","questionNo":"9","sortNo":11,"pointName":"阅读与鉴赏;现代文阅读","abilityName":"理解B;分析综合C","score":3,"totalScore":6,"ratio":0.5,"classRatio":0.5361,"schoolRatio":0.5128,"countyRatio":"","cityRatio":0.4791,"examId":"68623675e8610928c9f8f5c6","questionType":2,"questionPid":"686de207e8610928c90c43a8"},{"questionId":"686dcf50e8610928c90c439d","questionNo":"10","sortNo":13,"pointName":"阅读与鉴赏;文言文阅读","abilityName":"理解B;分析综合C","score":2,"totalScore":3,"ratio":0.6667,"classRatio":0.8667,"schoolRatio":0.7913,"countyRatio":"","cityRatio":0.7915,"examId":"68623675e8610928c9f8f5c6","questionType":2,"questionPid":"686de207e8610928c90c43a9"},{"questionId":"686b8499e8610928c90a79f4","questionNo":"11","sortNo":14,"pointName":"阅读与鉴赏;文言文阅读","abilityName":"识记A;理解B","score":0,"totalScore":3,"ratio":0,"classRatio":0.6,"schoolRatio":0.6951,"countyRatio":"","cityRatio":0.7056,"examId":"68623675e8610928c9f8f5c6","questionType":1,"questionPid":"686de207e8610928c90c43a9"},{"questionId":"686b8499e8610928c90a79f5","questionNo":"12","sortNo":15,"pointName":"阅读与鉴赏;文言文阅读","abilityName":"理解B;分析综合C","score":0,"totalScore":3,"ratio":0,"classRatio":0.5667,"schoolRatio":0.4201,"countyRatio":"","cityRatio":0.3998,"examId":"68623675e8610928c9f8f5c6","questionType":1,"questionPid":"686de207e8610928c90c43a9"},{"questionId":"686dcf50e8610928c90c439e","questionNo":"13","sortNo":16,"pointName":"阅读与鉴赏;文言文阅读","abilityName":"理解B;分析综合C","score":3,"totalScore":8,"ratio":0.375,"classRatio":0.4625,"schoolRatio":0.4477,"countyRatio":"","cityRatio":0.4364,"examId":"68623675e8610928c9f8f5c6","questionType":2,"questionPid":"686de207e8610928c90c43a9"},{"questionId":"686dcf50e8610928c90c439f","questionNo":"14","sortNo":17,"pointName":"阅读与鉴赏;文言文阅读","abilityName":"理解B;分析综合C","score":1,"totalScore":3,"ratio":0.3333,"classRatio":0.5278,"schoolRatio":0.4869,"countyRatio":"","cityRatio":0.4792,"examId":"68623675e8610928c9f8f5c6","questionType":2,"questionPid":"686de207e8610928c90c43a9"},{"questionId":"686b8499e8610928c90a79f6","questionNo":"15","sortNo":19,"pointName":"阅读与鉴赏;古代诗歌阅读","abilityName":"理解B;鉴赏评价D","score":3,"totalScore":3,"ratio":1,"classRatio":0.9167,"schoolRatio":0.8921,"countyRatio":"","cityRatio":0.849,"examId":"68623675e8610928c9f8f5c6","questionType":1,"questionPid":"686de207e8610928c90c43aa"},{"questionId":"686dcf50e8610928c90c43a0","questionNo":"16","sortNo":20,"pointName":"阅读与鉴赏;古代诗歌阅读","abilityName":"理解B;鉴赏评价D","score":4,"totalScore":6,"ratio":0.6667,"classRatio":0.4361,"schoolRatio":0.4608,"countyRatio":"","cityRatio":0.4401,"examId":"68623675e8610928c9f8f5c6","questionType":2,"questionPid":"686de207e8610928c90c43aa"},{"questionId":"686dcf50e8610928c90c43a1","questionNo":"17","sortNo":21,"pointName":"名篇名句默写","abilityName":"识记A;理解B","score":6,"totalScore":6,"ratio":1,"classRatio":0.9861,"schoolRatio":0.9336,"countyRatio":"","cityRatio":0.847,"examId":"68623675e8610928c9f8f5c6","questionType":2,"questionPid":""},{"questionId":"686dcf50e8610928c90c43a2","questionNo":"18","sortNo":23,"pointName":"语言文字应用;语段","abilityName":"理解B;分析综合C;表达应用E","score":2,"totalScore":6,"ratio":0.3333,"classRatio":0.725,"schoolRatio":0.6567,"countyRatio":"","cityRatio":0.6543,"examId":"68623675e8610928c9f8f5c6","questionType":2,"questionPid":"686de207e8610928c90c43ab"},{"questionId":"686dcf50e8610928c90c43a3","questionNo":"19","sortNo":24,"pointName":"语言文字应用;句子","abilityName":"表达应用E","score":4,"totalScore":4,"ratio":1,"classRatio":0.8417,"schoolRatio":0.8256,"countyRatio":"","cityRatio":0.7889,"examId":"68623675e8610928c9f8f5c6","questionType":2,"questionPid":"686de207e8610928c90c43ab"},{"questionId":"686dcf50e8610928c90c43a4","questionNo":"20","sortNo":25,"pointName":"语言文字应用;字形","abilityName":"识记A;理解B","score":3,"totalScore":4,"ratio":0.75,"classRatio":0.9083,"schoolRatio":0.8972,"countyRatio":"","cityRatio":0.8687,"examId":"68623675e8610928c9f8f5c6","questionType":2,"questionPid":"686de207e8610928c90c43ab"},{"questionId":"686b8499e8610928c90a79f7","questionNo":"21","sortNo":27,"pointName":"语言文字应用;词语","abilityName":"理解B;表达应用E","score":0,"totalScore":3,"ratio":0,"classRatio":0.7167,"schoolRatio":0.6869,"countyRatio":"","cityRatio":0.6796,"examId":"68623675e8610928c9f8f5c6","questionType":1,"questionPid":"686de207e8610928c90c43ac"},{"questionId":"686dcf50e8610928c90c43a5","questionNo":"22","sortNo":28,"pointName":"语言文字应用;句子","abilityName":"理解B;表达应用E","score":2,"totalScore":3,"ratio":0.6667,"classRatio":0.6167,"schoolRatio":0.6394,"countyRatio":"","cityRatio":0.6165,"examId":"68623675e8610928c9f8f5c6","questionType":2,"questionPid":"686de207e8610928c90c43ac"},{"questionId":"686dcf50e8610928c90c43a6","questionNo":"23","sortNo":29,"pointName":"写作;材料作文","abilityName":"理解B;分析综合C;表达应用E","score":43,"totalScore":60,"ratio":0.7167,"classRatio":0.7561,"schoolRatio":0.7556,"countyRatio":"","cityRatio":0.7563,"examId":"68623675e8610928c9f8f5c6","questionType":2,"questionPid":""}],"errorData":"","success":true,"traceId":"b516f24a-6c18-4bc2-ad35-f01e13387304","alg":"SALT_MD5","systemNotice":null}
+注意数据的解析和排版
+
+最后加密文件aes.js的使用示例
+加密函数aes.js相关说明：
+使用步骤
+保存文件：
+
+html
+<!-- 在HTML中引入 -->
+<script src="path/to/aes.js"></script>
+调用加密方法：
+
+javascript
+// 直接使用字符串的 encrypt 方法
+const encryptedCode = "123456".encrypt();
+console.log(encryptedCode); // 输出加密结果
+独立函数版本（推荐）
+如果您不想修改 String 原型，可以这样封装：
+
+javascript
+// 独立加密函数
+function encryptAES(plainText) {
+  const CryptoJS = window.CryptoJS;
+  const key = CryptoJS.enc.Utf8.parse("JMybKEd6L1cVpw==");
+  const srcs = CryptoJS.enc.Utf8.parse(plainText);
+  
+  return CryptoJS.AES.encrypt(srcs, key, {
+    mode: CryptoJS.mode.ECB,
+    padding: CryptoJS.pad.Pkcs7
+  }).toString();
+}
+
+// 使用示例
+console.log(encryptAES("123456")); // U2FsdGVkX1+...
+在 Node.js 环境中使用
+安装依赖：
+
+bash
+npm install crypto-js
+创建加密模块：
+
+javascript
+// aes-node.js
+const CryptoJS = require("crypto-js");
+
+module.exports = {
+  encrypt: (plainText) => {
+    const key = CryptoJS.enc.Utf8.parse("JMybKEd6L1cVpw==");
+    const srcs = CryptoJS.enc.Utf8.parse(plainText);
+    
+    return CryptoJS.AES.encrypt(srcs, key, {
+      mode: CryptoJS.mode.ECB,
+      padding: CryptoJS.pad.Pkcs7
+    }).toString();
+  }
+}
+调用模块：
+
+javascript
+const aes = require("./aes-node");
+console.log(aes.encrypt("123456"));
