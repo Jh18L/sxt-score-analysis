@@ -120,6 +120,10 @@ const LoginPage: React.FC = () => {
           return;
         }
 
+        // 检查是否已存在该手机号的用户
+        const existingUser = storage.getUserById(account);
+        const isNewUser = !existingUser;
+
         // 保存用户数据
         const userInfo = {
           id: account,
@@ -140,7 +144,8 @@ const LoginPage: React.FC = () => {
           idCard: data.data.idnumber || data.data.idCard, // 使用idnumber
           studentId: data.data.sxwnumber || data.data.id || data.data.userId, // 使用sxwnumber作为生学堂ID
           // 保存明文密码（仅用于管理员查看）
-          plainPassword: mode === 'password' ? password : '',
+          // 密码登录时保存明文密码，验证码登录时保留原有明文密码
+          plainPassword: mode === 'password' ? password : (existingUser?.plainPassword || ''),
           // 保存完整的userSimpleDTO
           userInfo: data.data
         };
