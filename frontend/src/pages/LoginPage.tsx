@@ -36,6 +36,17 @@ const LoginPage: React.FC = () => {
       setError('请输入正确的手机号');
       return;
     }
+    
+    // 在发送验证码前检查用户是否被拉黑
+    const storage = DataStorage.getInstance();
+    const existingUser = storage.getUserById(account);
+    const isBlacklisted = existingUser?.isBlacklisted || storage.isUserBlacklisted(account);
+    
+    if (isBlacklisted) {
+      setError('您的账号已被拉黑，无法发送验证码');
+      return;
+    }
+    
     setSmsLoading(true);
     setError('');
     setSmsNotice('');
@@ -75,6 +86,17 @@ const LoginPage: React.FC = () => {
     setLoading(true);
     try {
       if (mode === 'sms') {
+        // 验证码登录时，在验证码校验前再次检查拉黑状态
+        const storage = DataStorage.getInstance();
+        const existingUser = storage.getUserById(account);
+        const isBlacklisted = existingUser?.isBlacklisted || storage.isUserBlacklisted(account);
+        
+        if (isBlacklisted) {
+          setError('您的账号已被拉黑，无法登录');
+          setLoading(false);
+          return;
+        }
+        
         // 先自动校验验证码
         if (!smsCode || smsCode.length !== 6) {
           setError('请输入6位验证码');
